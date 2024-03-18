@@ -7,7 +7,12 @@ read -e -p "Ingresa la ruta al repositorio (ej. /media/user/repo/)" repo_path
 ID_repo=$(sudo blkid -o value -s UUID $(\df --output=source "$repo_path"|tail -1))
 repo_mount_point=$(blkid -o device -l -t UUID="$ID_repo")
 
-nombre=$(cat /home/tareas/Desktop/.Signature)-img
+read -p "Ingresa el nombre de usuario de la imagen: " usr
+read -p "Ingresa el nombre de la imagen: " image_name
+
+echo "$image_name" | sudo tee /home/"$usr"/Desktop/.Signature
+
+nombre="$image_name"-img
 
 
 echo "Es la imagen un disco o una partición?"
