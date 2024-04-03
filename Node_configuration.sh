@@ -5,6 +5,7 @@ sudo ethtool -s enp1s0 wol g #cambiar enp1s0 por el nombre de la interfaz de red
 sudo systemctl enable –now -wol
 sudo systemctl edit wol.service –full –force
 sudo apt install openssh-server -y
+sudo apt install jq
 sudo systemctl enable ssh
 sudo ufw allow ssh
 echo "tareas ALL=(ALL) NOPASSWD: /sbin/shutdown" | sudo tee -a /etc/sudoers
