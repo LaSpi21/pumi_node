@@ -58,7 +58,7 @@ fi
 disk="$selected_option"
 
         
-        entrada_grub="menuentry 'Restore $nombre'{
+        entrada_grub="menuentry 'Save $nombre'{
 ISO="$SCRIPT_DIR/clonezilla.iso"
 search --set -f "\$ISO"
 loopback loop "\$ISO"
@@ -101,7 +101,7 @@ fi
 disk=$(echo "$selected_option" | cut -d' ' -f1)
         
         
-        entrada_grub="menuentry 'Restore $nombre'{
+        entrada_grub="menuentry 'Save $nombre'{
 ISO="$SCRIPT_DIR/clonezilla.iso"
 search --set -f "\$ISO"
 loopback loop "\$ISO"
@@ -125,7 +125,7 @@ if [ "$confirm" = y ]; then
 
   # Actualizar GRUB
   sudo update-grub
-  sudo /usr/sbin/grub-reboot "Restore $nombre"
+  sudo /usr/sbin/grub-reboot "Save $nombre"
   /sbin/reboot
 
 else
