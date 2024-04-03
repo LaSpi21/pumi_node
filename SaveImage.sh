@@ -32,11 +32,46 @@ initrdefi (loop)/live/initrd.img
 }"
             ;;
 
-        2) entrada_grub="menuentry 'Restore $nombre'{
+        2) 
+        # Run the command and capture the JSON output
+json=$(lsblk -J)
+
+# Extract the names and sizes of the children
+children=$(echo "$json" | jq -r '.blockdevices[] | select(has("children")) | .children[] | "\(.name) (\(.size))"')
+
+# Clear the children array
+unset children_array
+
+# Store the children in an array
+declare -a children_array
+
+# Loop through children string and populate array with combined name and size
+while IFS= read -r line; do
+    children_array+=("$line")
+done <<< "$children"
+
+# Display options
+echo "Elige una partición:"
+for ((i=0; i<${#children_array[@]}; i++)); do
+    echo "$(($i + 1)) ${children_array[$i]}"
+done
+
+# Prompt the user to select a child
+read -p "Ingresa el número de la partición a elegir: " choice
+if [[ $choice =~ ^[0-9]+$ ]] && ((choice >= 1 && choice <= ${#children_array[@]})); then
+    selected_option="${children_array[$(($choice - 1))]}"
+    echo "Elegiste: $selected_option"
+else
+    echo "Opción invalida. Elige un valor entre 1 y ${#children_array[@]}."
+fi
+disk_name=$(echo "$selected_option" | cut -d' ' -f1)
+        
+        
+        entrada_grub="menuentry 'Restore $nombre'{
 ISO="$SCRIPT_DIR/clonezilla.iso"
 search --set -f "\$ISO"
 loopback loop "\$ISO"
-linux (loop)/live/vmlinuz boot=live union=overlay username=user config components quiet noswap edd=on nomodeset enforcing=0 noeject ocs_prerun=\\\"mount UUID="$ID_repo" /mnt\\\" ocs_prerun1=\\\"mount --bind /mnt /home/partimag/\\\" ocs_live_run=\\\"ocs-sr -q2 -c -j2 -z9p -i 4096 -sfsck -scs -senc -p shutdown saveparts "$nombre" sda2\\\" keyboard-layouts=\\\"us\\\" ocs_live_batch=\\\"yes\\\" locales=en_US.UTF-8 vga=788 ip= nosplash net.ifnames=0 splash i915.blacklist=yes radeonhd.blacklist=yes nouveau.blacklist=yes vmwgfx.enable_fbdev=1 findiso="\$ISO" toram
+linux (loop)/live/vmlinuz boot=live union=overlay username=user config components quiet noswap edd=on nomodeset enforcing=0 noeject ocs_prerun=\\\"mount UUID="$ID_repo" /mnt\\\" ocs_prerun1=\\\"mount --bind /mnt /home/partimag/\\\" ocs_live_run=\\\"ocs-sr -q2 -c -j2 -z9p -i 4096 -sfsck -scs -senc -p shutdown saveparts "$nombre" "$disk_name"\\\" keyboard-layouts=\\\"us\\\" ocs_live_batch=\\\"yes\\\" locales=en_US.UTF-8 vga=788 ip= nosplash net.ifnames=0 splash i915.blacklist=yes radeonhd.blacklist=yes nouveau.blacklist=yes vmwgfx.enable_fbdev=1 findiso="\$ISO" toram
 initrdefi (loop)/live/initrd.img
 }"
         ;;
@@ -47,7 +82,7 @@ initrdefi (loop)/live/initrd.img
 esac
 
 
-read -p "Estas seguro de copiar $nombre_e como una imagen?[y/n, default = no]" confirm
+read -p "Estas seguro de copiar $nombre como una imagen?[y/n, default = no]" confirm
 if [ "$confirm" = y ]; then
   echo agregando "$nombre"
 
