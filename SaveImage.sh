@@ -33,36 +33,35 @@ initrdefi (loop)/live/initrd.img
             ;;
 
         2) 
-        # Run the command and capture the JSON output
 json=$(lsblk -J)
 
-# Extract the names and sizes of the children
+# Extraer los nombres y tamaños de los discos hijos
 children=$(echo "$json" | jq -r '.blockdevices[] | select(has("children")) | .children[] | "\(.name) (\(.size))"')
 
-# Clear the children array
+# Limpiar el array de discos hijos
 unset children_array
 
-# Store the children in an array
+# Almacenar los discos hijos en un array
 declare -a children_array
 
-# Loop through children string and populate array with combined name and size
+# Recorrer la cadena de discos hijos y poblar el array con el nombre y el tamaño combinados
 while IFS= read -r line; do
     children_array+=("$line")
 done <<< "$children"
 
-# Display options
-echo "Elige una partición:"
+# Mostrar opciones
+echo "Selecciona un disco:"
 for ((i=0; i<${#children_array[@]}; i++)); do
     echo "$(($i + 1)) ${children_array[$i]}"
 done
 
-# Prompt the user to select a child
-read -p "Ingresa el número de la partición a elegir: " choice
+# Solicitar al usuario que seleccione un hijo
+read -p "Ingresa el número del disco: " choice
 if [[ $choice =~ ^[0-9]+$ ]] && ((choice >= 1 && choice <= ${#children_array[@]})); then
     selected_option="${children_array[$(($choice - 1))]}"
-    echo "Elegiste: $selected_option"
+    echo "Seleccionaste: $selected_option"
 else
-    echo "Opción invalida. Elige un valor entre 1 y ${#children_array[@]}."
+    echo "Opción inválida. Por favor ingresa un número entre 1 y ${#children_array[@]}."
 fi
 disk_name=$(echo "$selected_option" | cut -d' ' -f1)
         
