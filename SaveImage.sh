@@ -23,11 +23,46 @@ read opcion
 #Definir la entrada de GRUB
 
 case $opcion in
-        1) entrada_grub="menuentry 'Restore $nombre'{
+        1)
+
+json=$(lsblk -J)
+
+# Extraer los nombres de los discos
+fathers=$(echo "$json" | jq -r '.blockdevices[] | select(.type == "disk") | .name')
+
+# Limpiar el array de discos
+unset fathers_array
+
+# Almacenar los discos padres en un array
+declare -a fathers_array
+
+# Recorrer la cadena de discos y poblar el array
+while IFS= read -r line; do
+    fathers_array+=("$line")
+done <<< "$fathers"
+
+# Mostrar opciones
+echo "Selecciona un disco:"
+for ((i=0; i<${#fathers_array[@]}; i++)); do
+    echo "$(($i + 1)) ${fathers_array[$i]}"
+done
+
+# Solicitar al usuario que seleccione un padre
+read -p "Ingresa el número del disco: " choice
+if [[ $choice =~ ^[0-9]+$ ]] && ((choice >= 1 && choice <= ${#fathers_array[@]})); then
+    selected_option="${fathers_array[$(($choice - 1))]}"
+    echo "Seleccionaste: $selected_option"
+else
+    echo "Opción inválida. Por favor ingresa un número entre 1 y ${#fathers_array[@]}."
+fi
+disk="$selected_option"
+
+        
+        entrada_grub="menuentry 'Restore $nombre'{
 ISO="$SCRIPT_DIR/clonezilla.iso"
 search --set -f "\$ISO"
 loopback loop "\$ISO"
-linux (loop)/live/vmlinuz boot=live union=overlay username=user config components quiet noswap edd=on nomodeset enforcing=0 noeject ocs_prerun=\\\"mount UUID="$ID_repo" /mnt\\\" ocs_prerun1=\\\"mount --bind /mnt /home/partimag/\\\" ocs_live_run=\\\"ocs-sr -q2 -c -j2 -z9p -i 4096 -sfsck -scs -senc -p shutdown savedisk "$nombre"\\\" keyboard-layouts=\\\"us\\\" ocs_live_batch=\\\"yes\\\" locales=en_US.UTF-8 vga=788 ip= nosplash net.ifnames=0 splash i915.blacklist=yes radeonhd.blacklist=yes nouveau.blacklist=yes vmwgfx.enable_fbdev=1 findiso="\$ISO" toram
+linux (loop)/live/vmlinuz boot=live union=overlay username=user config components quiet noswap edd=on nomodeset enforcing=0 noeject ocs_prerun=\\\"mount UUID="$ID_repo" /mnt\\\" ocs_prerun1=\\\"mount --bind /mnt /home/partimag/\\\" ocs_live_run=\\\"ocs-sr -q2 -c -j2 -z9p -i 4096 -sfsck -scs -senc -p shutdown savedisk "$nombre" "$disk"\\\" keyboard-layouts=\\\"us\\\" ocs_live_batch=\\\"yes\\\" locales=en_US.UTF-8 vga=788 ip= nosplash net.ifnames=0 splash i915.blacklist=yes radeonhd.blacklist=yes nouveau.blacklist=yes vmwgfx.enable_fbdev=1 findiso="\$ISO" toram
 initrdefi (loop)/live/initrd.img
 }"
             ;;
@@ -63,14 +98,14 @@ if [[ $choice =~ ^[0-9]+$ ]] && ((choice >= 1 && choice <= ${#children_array[@]}
 else
     echo "Opción inválida. Por favor ingresa un número entre 1 y ${#children_array[@]}."
 fi
-disk_name=$(echo "$selected_option" | cut -d' ' -f1)
+disk=$(echo "$selected_option" | cut -d' ' -f1)
         
         
         entrada_grub="menuentry 'Restore $nombre'{
 ISO="$SCRIPT_DIR/clonezilla.iso"
 search --set -f "\$ISO"
 loopback loop "\$ISO"
-linux (loop)/live/vmlinuz boot=live union=overlay username=user config components quiet noswap edd=on nomodeset enforcing=0 noeject ocs_prerun=\\\"mount UUID="$ID_repo" /mnt\\\" ocs_prerun1=\\\"mount --bind /mnt /home/partimag/\\\" ocs_live_run=\\\"ocs-sr -q2 -c -j2 -z9p -i 4096 -sfsck -scs -senc -p shutdown saveparts "$nombre" "$disk_name"\\\" keyboard-layouts=\\\"us\\\" ocs_live_batch=\\\"yes\\\" locales=en_US.UTF-8 vga=788 ip= nosplash net.ifnames=0 splash i915.blacklist=yes radeonhd.blacklist=yes nouveau.blacklist=yes vmwgfx.enable_fbdev=1 findiso="\$ISO" toram
+linux (loop)/live/vmlinuz boot=live union=overlay username=user config components quiet noswap edd=on nomodeset enforcing=0 noeject ocs_prerun=\\\"mount UUID="$ID_repo" /mnt\\\" ocs_prerun1=\\\"mount --bind /mnt /home/partimag/\\\" ocs_live_run=\\\"ocs-sr -q2 -c -j2 -z9p -i 4096 -sfsck -scs -senc -p shutdown saveparts "$nombre" "$disk"\\\" keyboard-layouts=\\\"us\\\" ocs_live_batch=\\\"yes\\\" locales=en_US.UTF-8 vga=788 ip= nosplash net.ifnames=0 splash i915.blacklist=yes radeonhd.blacklist=yes nouveau.blacklist=yes vmwgfx.enable_fbdev=1 findiso="\$ISO" toram
 initrdefi (loop)/live/initrd.img
 }"
         ;;
