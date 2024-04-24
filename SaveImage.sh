@@ -2,6 +2,9 @@
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 read -e -p "Ingresa la ruta al repositorio (ej. /media/user/repo/)" repo_path
 
+sudo cp "$SCRIPT_DIR"/Save.exp "$repo_path"/Save.exp
+
+
 #Completa el archivo /pumi/Repo_path con las rutas e uuids del repositorio y de la carpeta /pumi/
 
 ID_repo=$(sudo blkid -o value -s UUID $(\df --output=source "$repo_path"|tail -1))
@@ -57,12 +60,11 @@ else
 fi
 disk="$selected_option"
 
-        
         entrada_grub="menuentry 'Save $nombre'{
 ISO="$SCRIPT_DIR/clonezilla.iso"
 search --set -f "\$ISO"
 loopback loop "\$ISO"
-linux (loop)/live/vmlinuz boot=live union=overlay username=user config components quiet noswap edd=on nomodeset enforcing=0 noeject ocs_prerun=\\\"mount UUID="$ID_repo" /mnt\\\" ocs_prerun1=\\\"mount --bind /mnt /home/partimag/\\\" ocs_live_run=\\\"ocs-sr -q2 -c -j2 -z9p -i 4096 -sfsck -scs -senc -p shutdown savedisk "$nombre" "$disk"\\\" keyboard-layouts=\\\"us\\\" ocs_live_batch=\\\"yes\\\" locales=en_US.UTF-8 vga=788 ip= nosplash net.ifnames=0 splash i915.blacklist=yes radeonhd.blacklist=yes nouveau.blacklist=yes vmwgfx.enable_fbdev=1 findiso="\$ISO" toram
+linux (loop)/live/vmlinuz boot=live union=overlay username=user config components quiet noswap edd=on nomodeset enforcing=0 noeject ocs_prerun=\\\"mount UUID="$ID_repo" /mnt\\\" ocs_prerun1=\\\"mount --bind /mnt /home/partimag/\\\" ocs_live_run=\\\"expect -f /home/partimag/Save.exp "$nombre" "$disk"\\\" keyboard-layouts=\\\"us\\\" ocs_live_batch=\\\"yes\\\" locales=en_US.UTF-8 vga=788 ip= nosplash net.ifnames=0 splash i915.blacklist=yes radeonhd.blacklist=yes nouveau.blacklist=yes vmwgfx.enable_fbdev=1 findiso="\$ISO" toram
 initrdefi (loop)/live/initrd.img
 }"
             ;;
@@ -99,13 +101,13 @@ else
     echo "Opción inválida. Por favor ingresa un número entre 1 y ${#children_array[@]}."
 fi
 disk=$(echo "$selected_option" | cut -d' ' -f1)
-        
-        
+
+
         entrada_grub="menuentry 'Save $nombre'{
 ISO="$SCRIPT_DIR/clonezilla.iso"
 search --set -f "\$ISO"
 loopback loop "\$ISO"
-linux (loop)/live/vmlinuz boot=live union=overlay username=user config components quiet noswap edd=on nomodeset enforcing=0 noeject ocs_prerun=\\\"mount UUID="$ID_repo" /mnt\\\" ocs_prerun1=\\\"mount --bind /mnt /home/partimag/\\\" ocs_live_run=\\\"ocs-sr -q2 -c -j2 -z9p -i 4096 -sfsck -scs -senc -p shutdown saveparts "$nombre" "$disk"\\\" keyboard-layouts=\\\"us\\\" ocs_live_batch=\\\"yes\\\" locales=en_US.UTF-8 vga=788 ip= nosplash net.ifnames=0 splash i915.blacklist=yes radeonhd.blacklist=yes nouveau.blacklist=yes vmwgfx.enable_fbdev=1 findiso="\$ISO" toram
+linux (loop)/live/vmlinuz boot=live union=overlay username=user config components quiet noswap edd=on nomodeset enforcing=0 noeject ocs_prerun=\\\"mount UUID="$ID_repo" /mnt\\\" ocs_prerun1=\\\"mount --bind /mnt /home/partimag/\\\" ocs_live_run=\\\"expect -f /home/partimag/Save.exp "$nombre" "$disk"\\\" keyboard-layouts=\\\"us\\\" ocs_live_batch=\\\"yes\\\" locales=en_US.UTF-8 vga=788 ip= nosplash net.ifnames=0 splash i915.blacklist=yes radeonhd.blacklist=yes nouveau.blacklist=yes vmwgfx.enable_fbdev=1 findiso="\$ISO" toram
 initrdefi (loop)/live/initrd.img
 }"
         ;;
@@ -131,3 +133,4 @@ if [ "$confirm" = y ]; then
 else
 echo Cancelando..
 fi
+
