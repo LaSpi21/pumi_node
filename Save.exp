@@ -18,11 +18,10 @@ spawn ocs-sr -q2 -c -j2 -z9p -i 4096 -sfsck -scs -senc -p shutdown savedisk $nom
 
 #Automatiza las interacciones con el usuario, despierta cada maquina en Macs.csv y luego reinicia el servidor.
 expect {
-    {Are you sure you want to continue?.}{
-       send "Y\r"
+    "Are you sure you want to continue? (y/n)" {
+        send "y\r"
         exp_continue
-   }
-        }
-
+    }
+}
 expect eof
 
