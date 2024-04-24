@@ -9,11 +9,15 @@ puts $nombre
 set disk [lrange $argv 1 1]
 puts $disk
 
+set type [lrange $argv 2 2]
+puts $type
 
 set timeout -1
 
 #Le pasa a clonezilla el codigo que ejecturá
-spawn ocs-sr -q2 -c -j2 -z9p -i 4096 -sfsck -scs -senc -p shutdown savedisk $nombre $disk
+spawn ocs-sr -q2 -c -j2 -z9p -i 4096 -sfsck -scs -senc -p shutdown $type $nombre $disk
+
+
 
 
 #Automatiza las interacciones con el usuario, despierta cada maquina en Macs.csv y luego reinicia el servidor.
