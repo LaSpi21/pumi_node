@@ -15,7 +15,7 @@ read -p "Ingresa el nombre de la imagen: " image_name
 
 echo "$image_name" | sudo tee /home/"$usr"/Desktop/.Signature
 
-nombre="$image_name"-img
+
 
 
 echo "Es la imagen un disco o una partición?"
@@ -60,6 +60,8 @@ else
 fi
 disk="$selected_option"
 
+nombre="$image_name$disk"-img
+
         entrada_grub="menuentry 'Save $nombre'{
 ISO="$SCRIPT_DIR/clonezilla.iso"
 search --set -f "\$ISO"
@@ -102,6 +104,7 @@ else
 fi
 disk=$(echo "$selected_option" | cut -d' ' -f1)
 
+nombre="$image_name$disk"-img
 
         entrada_grub="menuentry 'Save $nombre'{
 ISO="$SCRIPT_DIR/clonezilla.iso"
