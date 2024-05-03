@@ -60,7 +60,7 @@ else
 fi
 disk="$selected_option"
 
-nombre="$image_name$disk"-img
+nombre="$image_name-$disk"-img
 
         entrada_grub="menuentry 'Save $nombre'{
 ISO="$SCRIPT_DIR/clonezilla.iso"
